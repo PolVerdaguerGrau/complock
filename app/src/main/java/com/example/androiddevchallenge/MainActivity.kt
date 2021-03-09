@@ -32,9 +32,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val viewModel: ScreenViewModel by viewModels()
             MyTheme {
-                Surface(color = MaterialTheme.colors.background) {
-                    Clock(viewModel)
-                }
+                Clock(viewModel)
             }
         }
     }

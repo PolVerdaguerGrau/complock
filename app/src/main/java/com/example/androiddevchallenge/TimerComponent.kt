@@ -5,9 +5,9 @@ import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.core.withInfiniteAnimationFrameMillis
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,12 +27,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.androiddevchallenge.ui.theme.typography
 import kotlinx.coroutines.isActive
+
+const val MAX_HEIGHT = 230
+const val MIN_HEIGHT = 50
+const val ANIMATION_HEIGHT = 300
 
 @Composable
 fun TimerComponent(viewModel: ScreenViewModel) {
-    val MAX_HEIGHT = 280
-    val ANIMATION_HEIGHT = 350
     val timeLeft = viewModel.maxValue - viewModel.timePassed
     LaunchedEffect(key1 = Unit) {
         while (isActive) {
@@ -46,7 +50,7 @@ fun TimerComponent(viewModel: ScreenViewModel) {
                     viewModel.timestamp = it
                 }
                 if (viewModel.halfTimestamp != 0L) {
-                    val step = (it - viewModel.halfTimestamp) / 300
+                    val step = (it - viewModel.halfTimestamp) / 400
                     if (step > 0) {
                         viewModel.halfTimePassed += 1
                         viewModel.halfTimestamp = it
@@ -60,7 +64,7 @@ fun TimerComponent(viewModel: ScreenViewModel) {
     if (timeLeft == 0) {
         viewModel.maxValue = -1
     }
-    androidx.compose.foundation.layout.Column(
+    Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -71,23 +75,17 @@ fun TimerComponent(viewModel: ScreenViewModel) {
         val transition = updateTransition(targetState = viewModel.halfTimePassed)
         val offset by transition.animateDp { s ->
             when (s % 3) {
-                0 ->
-                    0.dp
-                1 ->
-                    0.dp
-                2 ->
-                    ANIMATION_HEIGHT.dp
+                0 -> 0.dp
+                1 -> 0.dp
+                2 -> ANIMATION_HEIGHT.dp
                 else -> 0.dp
             }
         }
         val size by transition.animateDp { s ->
             when ((s % 3)) {
-                0 ->
-                    0.dp
-                1 ->
-                    ANIMATION_HEIGHT.dp
-                2 ->
-                    0.dp
+                0 -> 0.dp
+                1 -> ANIMATION_HEIGHT.dp
+                2 -> 0.dp
                 else -> 0.dp
             }
         }
@@ -99,15 +97,15 @@ fun TimerComponent(viewModel: ScreenViewModel) {
                 .offset(y = offset)
         ) {
             Box(
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .height(size)
                     .clip(CircleShape)
                     .width(30.dp)
-                    .background(Color.Blue)
+                    .background(MaterialTheme.colors.primary)
             )
         }
     }
-    androidx.compose.foundation.layout.Column(
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -125,19 +123,26 @@ fun TimerComponent(viewModel: ScreenViewModel) {
                     timeLeft
                 )
             )
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(5.dp, 10.dp)
                     .width(size.dp)
                     .height(size.dp)
-                    .border(shape = CircleShape, width = 1.dp, color = Color.Blue)
                     .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
+                    .background(MaterialTheme.colors.secondaryVariant),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "$timeLeft",
+                    text = "Time Left",
+                    style = typography.h6,
+                    color = Color.White,
                     textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "$timeLeft",
+                    textAlign = TextAlign.Center, style = typography.body1,
+                    color = Color.White
                 )
             }
         }
@@ -155,22 +160,37 @@ fun TimerComponent(viewModel: ScreenViewModel) {
                     viewModel.timePassed
                 )
             )
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(5.dp, 10.dp)
                     .width(size.dp)
                     .height(size.dp)
                     .clip(CircleShape)
-                    .border(shape = CircleShape, width = 1.dp, color = Color.Blue)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
+                    .background(MaterialTheme.colors.primaryVariant),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
+                Text(
+                    text = "Time Passed",
+                    style = typography.h6,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
                 val text = viewModel.timePassed
                 Text(
                     text = "$text",
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = Color.White
                 )
             }
         }
     }
+}
+
+fun getNormalizedHeight(maxNormalizedHeight: Int, maxValue: Int, value: Int): Int {
+    if (maxValue == 0) return MIN_HEIGHT
+    val result = MIN_HEIGHT + (maxNormalizedHeight * value) / maxValue
+    return if (result <= 0) {
+        MIN_HEIGHT
+    } else result
 }

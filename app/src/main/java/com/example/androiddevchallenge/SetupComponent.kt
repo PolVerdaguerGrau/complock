@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,7 +35,12 @@ fun SetUpComponent(viewModel: ScreenViewModel) {
         Spacer(modifier = Modifier.height(230.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             val text = viewModel.timerValue
-            Text(text = "$text", Modifier.padding(10.dp), textAlign = TextAlign.End, style = typography.h2)
+            Text(
+                text = "$text",
+                Modifier.padding(10.dp),
+                textAlign = TextAlign.End,
+                style = typography.h2
+            )
             Column {
                 Box(contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -60,7 +66,7 @@ fun SetUpComponent(viewModel: ScreenViewModel) {
                         .width(30.dp)
                         .height(30.dp)
                         .clickable {
-                            viewModel.timerValue -= 1
+                            if (viewModel.timerValue > 0) viewModel.timerValue -= 1
                         }
                         .border(1.dp, Color.Black, shape = RoundedCornerShape(2.dp))
                 ) {
@@ -75,14 +81,9 @@ fun SetUpComponent(viewModel: ScreenViewModel) {
             }
         }
         Spacer(modifier = Modifier.height(30.dp))
-        Box(contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .padding(10.dp)
-                .border(1.dp, Color.Black, shape = RoundedCornerShape(2.dp))
-                .clickable { viewModel.maxValue = viewModel.timerValue }) {
-
+        Button(onClick = { viewModel.maxValue = viewModel.timerValue }) {
             Text(
-                text = "START", modifier = Modifier.padding(10.dp)
+                text = "START", style = typography.button
             )
         }
     }

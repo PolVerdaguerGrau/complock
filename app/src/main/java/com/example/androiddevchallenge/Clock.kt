@@ -20,11 +20,3 @@ fun Clock(viewModel: ScreenViewModel) {
         }
     }
 }
-
-fun getNormalizedHeight(maxNormalizedHeight: Int, maxValue: Int, value: Int): Int {
-    if (maxValue == 0) return 20
-    val result = 20 + (maxNormalizedHeight * value) / maxValue
-    return if (result <= 0) {
-        20
-    } else result
-}
