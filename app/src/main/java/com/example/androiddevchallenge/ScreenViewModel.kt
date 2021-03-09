@@ -14,4 +14,12 @@ class ScreenViewModel : ViewModel() {
     var timerValue by mutableStateOf(0)
     var maxValue by mutableStateOf(0)
 
+    fun clear() {
+        maxValue = 0
+        timestamp = 0
+        halfTimestamp = 0
+        timePassed = 0
+        halfTimePassed = 0
+        timerValue = 0
+    }
 }
