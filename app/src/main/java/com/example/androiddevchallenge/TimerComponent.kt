@@ -32,7 +32,7 @@ import kotlinx.coroutines.isActive
 
 const val MAX_HEIGHT = 230
 const val MIN_HEIGHT = 50
-const val ANIMATION_HEIGHT = 300
+const val ANIMATION_HEIGHT = 350
 
 @Composable
 fun TimerComponent(viewModel: ScreenViewModel) {
@@ -135,13 +135,13 @@ fun TimerComponent(viewModel: ScreenViewModel) {
             ) {
                 Text(
                     text = "Time Left",
-                    style = typography.h6,
+                    style = typography.body1,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "$timeLeft",
-                    textAlign = TextAlign.Center, style = typography.body1,
+                    textAlign = TextAlign.Center, style = typography.h6,
                     color = Color.White
                 )
             }
@@ -172,7 +172,7 @@ fun TimerComponent(viewModel: ScreenViewModel) {
             ) {
                 Text(
                     text = "Time Passed",
-                    style = typography.h6,
+                    style = typography.body1,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
@@ -180,6 +180,7 @@ fun TimerComponent(viewModel: ScreenViewModel) {
                 Text(
                     text = "$text",
                     textAlign = TextAlign.Center,
+                    style = typography.h6,
                     color = Color.White
                 )
             }
