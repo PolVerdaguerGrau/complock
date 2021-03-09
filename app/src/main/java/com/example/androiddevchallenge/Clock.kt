@@ -1,20 +1,26 @@
 package com.example.androiddevchallenge
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.core.withInfiniteAnimationFrameMillis
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,185 +32,222 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.isActive
-import java.util.*
 
 @Composable
 fun Clock() {
-    val calendar = remember { Calendar.getInstance() }
-    var seconds by remember { mutableStateOf(calendar[Calendar.SECOND]) }
-    var minutes by remember { mutableStateOf(calendar[Calendar.MINUTE]) }
-    var hours by remember { mutableStateOf(calendar[Calendar.HOUR_OF_DAY]) }
-    LaunchedEffect(key1 = Unit) {
-        while (isActive) {
-            withInfiniteAnimationFrameMillis {
-                calendar.timeInMillis = System.currentTimeMillis()
-                seconds = calendar[Calendar.SECOND]
-                minutes = calendar[Calendar.MINUTE]
-                hours = calendar[Calendar.HOUR_OF_DAY]
-            }
-        }
-    }
-    val hour1 = (hours / 10)
-    val hour2 = (hours % 10)
-    val minute1 = (minutes / 10)
-    val minute2 = (minutes % 10)
-    val seconds1 = (seconds / 10)
-    val seconds2 = (seconds % 10)
+    var timePassed by remember { mutableStateOf(0) }
+    var halfTimePassed by remember { mutableStateOf(0) }
+    var timestamp: Long by remember { mutableStateOf(0) }
+    var halfTimestamp: Long by remember { mutableStateOf(0) }
 
+    var timerValue by remember { mutableStateOf(0) }
+    var maxValue by remember {
+        mutableStateOf(0)
+    }
+    Crossfade(targetState = maxValue) {
+        when (maxValue) {
+            0 -> {
+                Column() {
+                    Row() {
+                        Text(text = "$timerValue", Modifier.padding(10.dp))
+                        Column() {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_arrow_up),
+                                contentDescription = "ArrowUp",
+                                Modifier
+                                    .padding(10.dp)
+                                    .clickable {
+                                        timerValue += 1
+                                    }
+                                    .border(1.dp, Color.Black)
+                            )
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_arrow_up),
+                                contentDescription = "ArrowDown",
+                                Modifier
+                                    .padding(10.dp)
+                                    .clickable {
+                                        timerValue = if (timerValue == 0) 0 else timerValue - 1
+                                    }
+                                    .border(1.dp, Color.Black)
+                            )
+                        }
+                    }
+                    Text(text = "Start!", modifier = Modifier
+                        .padding(10.dp)
+                        .clickable { maxValue = timerValue })
+                }
+            }
+            -1 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .background(Color.Green)
+                ) {
 
-    val transition = updateTransition(targetState = seconds)
-    val offset by transition.animateDp { s ->
-        when ((s % 10) % 4) {
-            0 ->
-                0.dp
-            1 ->
-                50.dp
-            2 ->
-                100.dp
-            else -> 150.dp
+                    Text(
+                        text = "DONE",
+                    )
+                    Button(onClick = { maxValue = 0 }) {
+                        Text("Take Me Out!")
+                    }
+                }
+            }
+            else -> {
+                val MAX_HEIGHT = 280
+                val ANIMATION_HEIGHT = 350
+                val timeLeft = maxValue - timePassed
+                LaunchedEffect(key1 = Unit) {
+                    while (isActive) {
+                        withInfiniteAnimationFrameMillis {
+                            if (timestamp != 0L) {
+                                val step = (it - timestamp) / 1000
+                                if (step > 0) {
+                                    timePassed += step.toInt()
+                                    timestamp = it
+                                }
+                            } else {
+                                timestamp = it
+                            }
+                            if (halfTimestamp != 0L) {
+                                val step = (it - halfTimestamp) / 300
+                                if (step > 0) {
+                                    halfTimePassed += 1
+                                    halfTimestamp = it
+                                }
+                            } else {
+                                halfTimestamp = it
+                            }
+                        }
+                    }
+                }
+                if (timeLeft == 0) {
+                    maxValue = -1
+                }
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = 150.dp)
+                        .fillMaxHeight()
+                ) {
+                    val transition = updateTransition(targetState = halfTimePassed)
+                    val offset by transition.animateDp { s ->
+                        when (s % 3) {
+                            0 ->
+                                0.dp
+                            1 ->
+                                0.dp
+                            2 ->
+                                ANIMATION_HEIGHT.dp
+                            else -> 0.dp
+                        }
+                    }
+                    val size by transition.animateDp { s ->
+                        when ((s % 3)) {
+                            0 ->
+                                0.dp
+                            1 ->
+                                ANIMATION_HEIGHT.dp
+                            2 ->
+                                0.dp
+                            else -> 0.dp
+                        }
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxHeight()
+                            .weight(1f, false)
+                            .width(30.dp)
+                            .offset(y = offset)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .height(size)
+                                .clip(CircleShape)
+                                .width(30.dp)
+                                .background(Color.Blue)
+                        )
+                    }
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp, 10.dp)
+                            .fillMaxHeight()
+                            .weight(1f, false),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val size: Int by animateIntAsState(
+                            targetValue = getNormalizedHeight(
+                                MAX_HEIGHT,
+                                maxValue,
+                                timeLeft
+                            )
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(5.dp, 10.dp)
+                                .width(size.dp)
+                                .height(size.dp)
+                                .border(shape = CircleShape, width = 1.dp, color = Color.Blue)
+                                .clip(CircleShape)
+                                .background(Color.Cyan),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$timeLeft",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp, 10.dp)
+                            .fillMaxHeight()
+                            .weight(1f, false),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val size: Int by animateIntAsState(
+                            targetValue = getNormalizedHeight(
+                                MAX_HEIGHT,
+                                maxValue,
+                                timePassed
+                            )
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(5.dp, 10.dp)
+                                .width(size.dp)
+                                .height(size.dp)
+                                .clip(CircleShape)
+                                .border(shape = CircleShape, width = 1.dp, color = Color.Blue)
+                                .background(Color.Cyan),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$timePassed",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
-    val size by transition.animateDp { s ->
-        when ((seconds % 10)) {
-            0, ->
-                50.dp
-            1 ->
-                100.dp
-            2 ->
-                50.dp
-            else -> 0.dp
-        }
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .offset(offset)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(Color.Cyan)
-                .width(size)
-                .height(30.dp)
-        )
-    }
+}
 
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(10.dp, 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val size: Int by animateIntAsState(targetValue = 20 + (hour1 * 3))
-            Box(
-                modifier = Modifier
-                    .padding(5.dp, 10.dp)
-                    .width(size.dp)
-                    .height(size.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$hour1",
-                    textAlign = TextAlign.Center
-                )
-            }
-            val size1: Int by animateIntAsState(targetValue = 20 + (hour2 * 3))
-            Box(
-                modifier = Modifier
-                    .padding(5.dp, 10.dp)
-                    .width(size1.dp)
-                    .height(size1.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$hour2",
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-        Row(
-            modifier = Modifier.padding(10.dp, 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val size1: Int by animateIntAsState(targetValue = 20 + (minute1 * 3))
-            Box(
-                modifier = Modifier
-                    .padding(5.dp, 10.dp)
-                    .width(size1.dp)
-                    .height(size1.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$minute1",
-                    textAlign = TextAlign.Center
-                )
-            }
-            val size: Int by animateIntAsState(targetValue = 20 + (minute2 * 3))
-            Box(
-                modifier = Modifier
-                    .padding(5.dp, 10.dp)
-                    .width(size.dp)
-                    .height(size.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$minute2",
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-        Row(
-            modifier = Modifier.padding(10.dp, 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val size1: Int by animateIntAsState(targetValue = 20 + (seconds1 * 3))
-            Box(
-                modifier = Modifier
-                    .animateContentSize()
-                    .padding(5.dp, 10.dp)
-                    .width(size1.dp)
-                    .height(size1.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$seconds1",
-                    textAlign = TextAlign.Center
-                )
-            }
-            val size: Int by animateIntAsState(targetValue = 20 + (seconds2 * 3))
-            Box(
-                modifier = Modifier
-                    .padding(5.dp, 10.dp)
-                    .width(size.dp)
-                    .height(size.dp)
-                    .clip(CircleShape)
-                    .background(Color.Cyan),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "$seconds2",
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
+fun getNormalizedHeight(maxNormalizedHeight: Int, maxValue: Int, value: Int): Int {
+    if (maxValue == 0) return 20
+    if (value <= 0) return 20
+    return 20 + (maxNormalizedHeight * value) / maxValue
 }
